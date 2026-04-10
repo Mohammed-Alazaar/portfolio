@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getProjects } from '../data/projects'
+import { getProjects, getExperiences } from '../api'
 
 const s = {
   nav: {
@@ -19,22 +19,46 @@ const s = {
     cursor:'pointer',transition:'background .2s',
   },
   hero: {
-    padding:'clamp(80px,10vw,130px) 24px clamp(60px,8vw,100px)',
-    textAlign:'center',borderBottom:'.5px solid var(--border)',
+    borderBottom:'.5px solid var(--border)',
     position:'relative',overflow:'hidden',
   },
-  heroBg: {
-    content:'',position:'absolute',width:700,height:500,borderRadius:'50%',
-    background:'radial-gradient(ellipse,rgba(46,202,139,.055) 0%,transparent 68%)',
-    top:-60,left:'50%',transform:'translateX(-50%)',pointerEvents:'none',
+  heroInner: {
+    maxWidth:1040,margin:'0 auto',
+    padding:'clamp(72px,9vw,120px) 24px clamp(56px,7vw,96px)',
+    display:'grid',gridTemplateColumns:'1fr auto',gap:'clamp(32px,5vw,72px)',
+    alignItems:'center',
   },
-  eyebrow: { fontSize:11,letterSpacing:'.1em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:22 },
-  h1: { fontSize:'clamp(38px,6.5vw,76px)',fontWeight:600,letterSpacing:'-.045em',lineHeight:1.05,color:'#fff',marginBottom:20,maxWidth:820,marginLeft:'auto',marginRight:'auto' },
-  sub: { fontSize:'clamp(15px,1.6vw,18px)',color:'var(--g400)',maxWidth:520,margin:'0 auto 14px',lineHeight:1.68,fontWeight:300,letterSpacing:'-.02em' },
-  contactRow: { display:'flex',gap:16,justifyContent:'center',flexWrap:'wrap',marginBottom:38,marginTop:8 },
+  heroBg: {
+    content:'',position:'absolute',width:820,height:560,borderRadius:'50%',
+    background:'radial-gradient(ellipse,rgba(46,202,139,.06) 0%,transparent 65%)',
+    top:-80,left:'20%',transform:'translateX(-50%)',pointerEvents:'none',
+  },
+  heroLeft: { display:'flex',flexDirection:'column',alignItems:'flex-start' },
+  eyebrow: { fontSize:11,letterSpacing:'.12em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:20 },
+  h1: { fontSize:'clamp(36px,5.5vw,68px)',fontWeight:600,letterSpacing:'-.045em',lineHeight:1.05,color:'#fff',marginBottom:18 },
+  sub: { fontSize:'clamp(14px,1.5vw,17px)',color:'var(--g400)',maxWidth:480,marginBottom:14,lineHeight:1.72,fontWeight:300,letterSpacing:'-.02em' },
+  contactRow: { display:'flex',gap:14,flexWrap:'wrap',marginBottom:32,marginTop:6 },
   contactLink: { fontSize:12,color:'var(--g600)',letterSpacing:'-.01em',transition:'color .2s' },
-  tags: { display:'flex',flexWrap:'wrap',gap:7,justifyContent:'center' },
+  tags: { display:'flex',flexWrap:'wrap',gap:7 },
   tag: { fontSize:12,color:'var(--g400)',background:'var(--surf)',border:'.5px solid var(--border)',padding:'5px 14px',borderRadius:980,letterSpacing:'-.01em' },
+  heroImgWrap: {
+    position:'relative',flexShrink:0,
+    width:'clamp(200px,22vw,300px)',
+    aspectRatio:'3/4',
+    borderRadius:20,overflow:'hidden',
+    border:'.5px solid rgba(255,255,255,.07)',
+    boxShadow:'0 32px 80px rgba(0,0,0,.6),0 0 0 .5px rgba(46,202,139,.12)',
+  },
+  heroImg: {
+    width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top',
+    display:'block',
+    filter:'brightness(.95) contrast(1.04)',
+  },
+  heroImgOverlay: {
+    position:'absolute',inset:0,
+    background:'linear-gradient(to top,rgba(0,0,0,.45) 0%,transparent 55%)',
+    pointerEvents:'none',
+  },
   section: { maxWidth:1040,margin:'0 auto',padding:'clamp(56px,7vw,88px) 24px' },
   lbl: { fontSize:11,letterSpacing:'.1em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:14 },
   sh: { fontSize:'clamp(26px,3.5vw,40px)',fontWeight:600,letterSpacing:'-.04em',lineHeight:1.1,color:'#fff',marginBottom:36 },
@@ -50,6 +74,21 @@ const s = {
   chips: { display:'flex',flexWrap:'wrap',gap:6 },
   chip: { fontSize:11,color:'var(--g600)',background:'rgba(255,255,255,.04)',border:'.5px solid rgba(255,255,255,.09)',padding:'3px 10px',borderRadius:980,letterSpacing:'-.01em' },
   cardYear: { fontSize:11,color:'rgba(255,255,255,.2)',marginTop:16,letterSpacing:'-.01em' },
+  expList: { display:'flex',flexDirection:'column',gap:0 },
+  expItem: {
+    display:'grid',gridTemplateColumns:'1fr auto',gap:24,alignItems:'start',
+    padding:'28px 0',borderBottom:'.5px solid var(--border)',
+  },
+  expLeft: { display:'flex',flexDirection:'column',gap:10 },
+  expMeta: { display:'flex',alignItems:'center',gap:10,flexWrap:'wrap' },
+  expCo: { fontSize:15,fontWeight:600,letterSpacing:'-.03em',color:'#fff' },
+  expDot: { width:3,height:3,borderRadius:'50%',background:'rgba(255,255,255,.2)',flexShrink:0 },
+  expRole: { fontSize:13,color:'var(--teal)',letterSpacing:'-.01em',fontWeight:500 },
+  expDesc: { fontSize:13,color:'var(--g400)',lineHeight:1.7,letterSpacing:'-.01em',maxWidth:580 },
+  expTags: { display:'flex',flexWrap:'wrap',gap:5,marginTop:2 },
+  expTag: { fontSize:11,color:'var(--g600)',background:'rgba(255,255,255,.04)',border:'.5px solid rgba(255,255,255,.07)',padding:'3px 9px',borderRadius:980,letterSpacing:'-.01em' },
+  expPeriod: { fontSize:12,color:'var(--g600)',letterSpacing:'-.01em',whiteSpace:'nowrap',paddingTop:2 },
+  expBadge: { display:'inline-flex',alignItems:'center',gap:5,fontSize:11,color:'var(--teal)',background:'var(--teal-dim)',border:'.5px solid rgba(46,202,139,.2)',padding:'3px 10px',borderRadius:980,letterSpacing:'-.01em' },
   aboutGrid: { display:'grid',gridTemplateColumns:'1fr 1fr',gap:52,alignItems:'start' },
   skillCard: { background:'var(--surf)',border:'.5px solid var(--border)',borderRadius:18,padding:'24px 22px' },
   skillLbl: { fontSize:11,letterSpacing:'.1em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:12 },
@@ -61,7 +100,18 @@ const s = {
 }
 
 export default function Home() {
-  const projects = getProjects()
+  const [projects, setProjects] = useState([])
+  const [projError, setProjError] = useState(false)
+  const [experiences, setExperiences] = useState([])
+
+  useEffect(() => {
+    getProjects().then(setProjects).catch(() => setProjError(true))
+    getExperiences().then(setExperiences).catch(console.error)
+  }, [])
+
+  useEffect(() => {
+    document.querySelectorAll('.r-hero').forEach((el) => el.classList.add('on'))
+  }, [])
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -69,9 +119,8 @@ export default function Home() {
       { threshold: 0.1 }
     )
     document.querySelectorAll('.r').forEach((el) => obs.observe(el))
-    document.querySelectorAll('.r-hero').forEach((el) => el.classList.add('on'))
     return () => obs.disconnect()
-  }, [])
+  }, [projects])
 
   return (
     <>
@@ -87,22 +136,31 @@ export default function Home() {
 
       <section style={s.hero} id="hero">
         <div style={s.heroBg} />
-        <div className="r-hero" style={s.eyebrow}>Growth · Full-Stack · Marketing</div>
-        <h1 className="r-hero" style={s.h1}>Mohammed Alazaar</h1>
-        <p className="r-hero" style={s.sub}>
-          Growth & Marketing Manager and Full-Stack Developer bridging strategy with technical execution — from go-to-market to production-grade platforms.
-        </p>
-        <div className="r-hero" style={s.contactRow}>
-          <a href="mailto:mhmdalazr@gmail.com" style={s.contactLink}>mhmdalazr@gmail.com</a>
-          <span style={{color:'rgba(255,255,255,.12)'}}>·</span>
-          <span style={s.contactLink}>Ankara, Türkiye</span>
-          <span style={{color:'rgba(255,255,255,.12)'}}>·</span>
-          <a href="https://linkedin.com/in/mohammedalazaar" target="_blank" rel="noreferrer" style={s.contactLink}>linkedin.com/in/mohammedalazaar</a>
-        </div>
-        <div className="r-hero" style={s.tags}>
-          {['Go-To-Market','Full-Stack Dev','SEO Architecture','HubSpot','GA4 · GTM','Node.js','MongoDB','React','Figma'].map(t => (
-            <span key={t} style={s.tag}>{t}</span>
-          ))}
+        <div className="hero-inner-grid" style={s.heroInner}>
+          <div style={s.heroLeft}>
+            <div className="r-hero" style={s.eyebrow}>Growth · Full-Stack · Marketing</div>
+            <h1 className="r-hero" style={s.h1}>Mohammed<br/>Alazaar</h1>
+            <p className="r-hero" style={s.sub}>
+              Growth & Marketing Manager and Full-Stack Developer bridging strategy with technical execution — from go-to-market to production-grade platforms.
+            </p>
+            <div className="r-hero" style={s.contactRow}>
+              <a href="mailto:mhmdalazr@gmail.com" style={s.contactLink}>mhmdalazr@gmail.com</a>
+              <span style={{color:'rgba(255,255,255,.12)'}}>·</span>
+              <span style={s.contactLink}>Ankara, Türkiye</span>
+              <span style={{color:'rgba(255,255,255,.12)'}}>·</span>
+              <a href="https://linkedin.com/in/mohammedalazaar" target="_blank" rel="noreferrer" style={s.contactLink}>LinkedIn</a>
+            </div>
+            <div className="r-hero" style={s.tags}>
+              {['Go-To-Market','Full-Stack Dev','SEO Architecture','HubSpot','GA4 · GTM','Node.js','MongoDB','React','Figma'].map(t => (
+                <span key={t} style={s.tag}>{t}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="r-hero hero-img-wrap" style={s.heroImgWrap}>
+            <img src={`${import.meta.env.BASE_URL}hero.jpg`} alt="Mohammed Alazaar" style={s.heroImg} />
+            <div style={s.heroImgOverlay} />
+          </div>
         </div>
       </section>
 
@@ -110,6 +168,11 @@ export default function Home() {
         <div style={s.section}>
           <div className="r" style={s.lbl}>Selected Work</div>
           <h2 className="r d1" style={s.sh}>Projects</h2>
+          {projError && (
+            <div style={{fontSize:13,color:'#ff6b6b',background:'rgba(255,60,60,.07)',border:'.5px solid rgba(255,60,60,.15)',borderRadius:10,padding:'12px 18px',marginBottom:24,letterSpacing:'-.01em'}}>
+              Could not connect to the server. Make sure the backend is running on port 3001.
+            </div>
+          )}
           <div style={s.grid}>
             {projects.map((p, i) => (
               <Link
@@ -128,6 +191,49 @@ export default function Home() {
                   {p.tags.length > 4 && <span style={s.chip}>+{p.tags.length - 4}</span>}
                 </div>
                 <div style={s.cardYear}>{p.year}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{borderTop:'.5px solid var(--border)'}}>
+        <div style={s.section}>
+          <div className="r" style={s.lbl}>Experience</div>
+          <h2 className="r d1" style={s.sh}>Work Experience</h2>
+          <div style={s.expList}>
+            {experiences.map((e, i) => (
+              <Link
+                key={e.id}
+                to={`/experience/${e.id}`}
+                className={`r d${(i % 2) + 1}`}
+                style={{...s.expItem, textDecoration:'none', color:'inherit', display:'grid', cursor:'pointer'}}
+                onMouseEnter={ev => ev.currentTarget.style.background='rgba(255,255,255,.02)'}
+                onMouseLeave={ev => ev.currentTarget.style.background='transparent'}
+              >
+                <div style={s.expLeft}>
+                  <div style={s.expMeta}>
+                    <span style={s.expCo}>{e.company}</span>
+                    <span style={s.expDot} />
+                    <span style={s.expRole}>{e.role}</span>
+                    {e.current && (
+                      <span style={s.expBadge}>
+                        <span style={{width:5,height:5,borderRadius:'50%',background:'var(--teal)',display:'block',flexShrink:0}} />
+                        Current
+                      </span>
+                    )}
+                  </div>
+                  <p style={s.expDesc}>{e.description}</p>
+                  <div style={s.expTags}>
+                    {e.tags.slice(0, 6).map(t => (
+                      <span key={t} style={s.expTag}>{t}</span>
+                    ))}
+                  </div>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:8,paddingTop:2}}>
+                  <span style={s.expPeriod}>{e.period}</span>
+                  <span style={{fontSize:12,color:'var(--teal)',letterSpacing:'-.01em'}}>View →</span>
+                </div>
               </Link>
             ))}
           </div>
@@ -193,9 +299,16 @@ export default function Home() {
       <style>{`
         @media(max-width:740px){
           .about-grid { grid-template-columns:1fr !important; }
+          .hero-inner-grid { grid-template-columns:1fr !important; }
+          .hero-img-wrap { width:clamp(140px,48vw,220px) !important; margin:0 auto; }
+        }
+        @media(max-width:600px){
+          .hero-inner-grid { flex-direction:column-reverse !important; display:flex !important; }
         }
         .r-hero { opacity:0; transform:translateY(24px); transition:opacity .7s cubic-bezier(.25,.46,.45,.94),transform .7s cubic-bezier(.25,.46,.45,.94); }
         .r-hero.on { opacity:1; transform:none; }
+        .r-hero.hero-img-wrap { transform:translateY(24px) scale(.97); }
+        .r-hero.hero-img-wrap.on { transform:none; }
       `}</style>
     </>
   )

@@ -1,22 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getProjects, saveProjects } from '../data/projects'
+import { getProjects, createProject, updateProject, deleteProject, login, verifyToken, getExperiences, createExperience, updateExperience, deleteExperience } from '../api'
 
 const EMPTY_PROJECT = {
-  id: '',
-  title: '',
-  subtitle: '',
-  eyebrow: '',
-  description: '',
-  url: '',
-  year: '',
-  tags: [],
-  challenge: { heading: 'The Challenge', body: '', bullets: [] },
-  features: [],
-  story: '',
-  journey: [],
-  outcomes: [],
+  id: '', title: '', subtitle: '', eyebrow: '', description: '', url: '', year: '',
+  tags: [], challenge: { heading: 'The Challenge', body: '', bullets: [] },
+  features: [], story: '', journey: [], outcomes: [],
   brand: { name: '', initials: '', tagline: '' },
+}
+
+const EMPTY_EXPERIENCE = {
+  id: '', company: '', role: '', period: '', current: false, location: '',
+  eyebrow: '', headline: '', description: '', about: '', story: '',
+  tags: [], responsibilities: [], contributions: [], outcomes: [],
+  brand: { name: '', initials: '', tagline: '', url: '' },
 }
 
 const s = {
@@ -236,7 +233,7 @@ function JourneyField({ journey, onChange }) {
   )
 }
 
-function ProjectForm({ project, onSave, onDelete, isNew }) {
+function ProjectForm({ project, onSave, onDelete, isNew, saving }) {
   const [form, setForm] = useState(() => JSON.parse(JSON.stringify(project)))
   const set = (path, val) => {
     setForm(prev => {
@@ -320,11 +317,11 @@ function ProjectForm({ project, onSave, onDelete, isNew }) {
 
       {/* Actions */}
       <div style={s.actionsRow}>
-        <button type="submit" style={s.saveBtn}
-          onMouseEnter={e=>e.currentTarget.style.opacity='.85'}
-          onMouseLeave={e=>e.currentTarget.style.opacity='1'}
+        <button type="submit" style={{...s.saveBtn, opacity: saving ? .6 : 1}} disabled={saving}
+          onMouseEnter={e=>{ if (!saving) e.currentTarget.style.opacity='.85' }}
+          onMouseLeave={e=>{ if (!saving) e.currentTarget.style.opacity='1' }}
         >
-          {isNew ? 'Add Project' : 'Save Changes'}
+          {saving ? 'Saving…' : isNew ? 'Add Project' : 'Save Changes'}
         </button>
         {!isNew && (
           <Link to={`/project/${form.id}`} target="_blank" style={s.previewBtn}>Preview ↗</Link>
@@ -337,43 +334,304 @@ function ProjectForm({ project, onSave, onDelete, isNew }) {
   )
 }
 
+function ExperienceForm({ experience, onSave, onDelete, isNew, saving }) {
+  const [form, setForm] = useState(() => JSON.parse(JSON.stringify(experience)))
+  const set = (path, val) => {
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      const keys = path.split('.')
+      let obj = next
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]]
+      obj[keys[keys.length - 1]] = val
+      return next
+    })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!form.id.trim()) { alert('ID is required'); return }
+    if (!form.company.trim()) { alert('Company is required'); return }
+    onSave(form)
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={s.formTitle}>{isNew ? 'Add Experience' : 'Edit Experience'}</div>
+      <div style={s.formSub}>{isNew ? 'Add a work experience entry.' : `Editing: ${form.company} — ${form.role}`}</div>
+
+      <div style={s.section}>
+        <div style={s.sectionTitle}>Basic Info</div>
+        <div style={s.grid2}>
+          <Field label="ID (URL slug)" value={form.id} onChange={v => set('id', v.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,''))} placeholder="e.g. draglab" />
+          <Field label="Period" value={form.period} onChange={v => set('period', v)} placeholder="e.g. 2024 – Present" />
+        </div>
+        <div style={s.grid2}>
+          <Field label="Company" value={form.company} onChange={v => set('company', v)} placeholder="Company name" />
+          <Field label="Role / Title" value={form.role} onChange={v => set('role', v)} placeholder="e.g. Full-Stack Developer" />
+        </div>
+        <div style={s.grid2}>
+          <Field label="Location" value={form.location} onChange={v => set('location', v)} placeholder="e.g. Remote · Helsinki" />
+          <Field label="Eyebrow" value={form.eyebrow} onChange={v => set('eyebrow', v)} placeholder="e.g. AI Legal Tech · Finland" />
+        </div>
+        <div style={{...s.field,flexDirection:'row',alignItems:'center',gap:10}}>
+          <input type="checkbox" checked={form.current} onChange={e => set('current', e.target.checked)} id="exp-current" />
+          <label htmlFor="exp-current" style={{fontSize:13,color:'var(--g400)',cursor:'pointer'}}>Currently working here</label>
+        </div>
+        <Field label="Headline (detail page h1)" value={form.headline} onChange={v => set('headline', v)} placeholder="e.g. Building a platform from scratch" />
+        <TextArea label="Short Description (home page)" value={form.description} onChange={v => set('description', v)} rows={2} placeholder="1–2 sentence summary shown on homepage" />
+        <TextArea label="About the Company" value={form.about} onChange={v => set('about', v)} rows={3} placeholder="What does the company do?" />
+        <TagsField tags={form.tags} onChange={v => set('tags', v)} />
+      </div>
+
+      <div style={s.section}>
+        <div style={s.sectionTitle}>Brand</div>
+        <div style={s.grid2}>
+          <Field label="Brand Name" value={form.brand.name} onChange={v => set('brand.name', v)} placeholder="CompanyName" />
+          <Field label="Initials" value={form.brand.initials} onChange={v => set('brand.initials', v)} placeholder="CN" />
+        </div>
+        <div style={s.grid2}>
+          <Field label="Tagline" value={form.brand.tagline} onChange={v => set('brand.tagline', v)} placeholder="Short tagline" />
+          <Field label="Website URL" value={form.brand.url} onChange={v => set('brand.url', v)} placeholder="https://company.com" />
+        </div>
+      </div>
+
+      <div style={s.section}>
+        <div style={s.sectionTitle}>Key Contributions</div>
+        {form.contributions.map((c, i) => (
+          <div key={i} style={{background:'rgba(255,255,255,.02)',border:'.5px solid var(--border)',borderRadius:12,padding:'16px',marginBottom:10}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:12}}>
+              <span style={{fontSize:12,color:'var(--g600)'}}>Contribution {i + 1}</span>
+              <button type="button" style={s.removeBtn} onClick={() => set('contributions', form.contributions.filter((_,j)=>j!==i))}>×</button>
+            </div>
+            <div style={s.grid2}>
+              <div style={s.field}>
+                <label style={s.label}>Icon</label>
+                <select value={c.icon} onChange={e => { const n=[...form.contributions]; n[i]={...n[i],icon:e.target.value}; set('contributions',n) }} style={{...s.input,cursor:'pointer'}}>
+                  {['grid','globe','shield','chart','cube','cart','users','rocket','brand','mail','search'].map(ic => <option key={ic} value={ic}>{ic}</option>)}
+                </select>
+              </div>
+              <Field label="Title" value={c.title} onChange={v => { const n=[...form.contributions]; n[i]={...n[i],title:v}; set('contributions',n) }} placeholder="Contribution title" />
+            </div>
+            <TextArea label="Description" value={c.desc} onChange={v => { const n=[...form.contributions]; n[i]={...n[i],desc:v}; set('contributions',n) }} rows={2} placeholder="Short description" />
+          </div>
+        ))}
+        <button type="button" style={s.addItemBtn} onClick={() => set('contributions', [...form.contributions, {icon:'grid',title:'',desc:''}])}>+ Add Contribution</button>
+      </div>
+
+      <div style={s.section}>
+        <div style={s.sectionTitle}>Full Story</div>
+        <TextArea label="Story (supports <em>text</em>)" value={form.story} onChange={v => set('story', v)} rows={6} placeholder="Full narrative. Wrap key phrases in <em>...</em> for teal emphasis." />
+      </div>
+
+      <div style={s.section}>
+        <div style={s.sectionTitle}>Responsibilities</div>
+        <BulletsField label="Day-to-day responsibilities" items={form.responsibilities} onChange={v => set('responsibilities', v)} placeholder="A specific responsibility" />
+      </div>
+
+      <div style={s.section}>
+        <div style={s.sectionTitle}>Outcomes</div>
+        <BulletsField label="Key results / outcomes" items={form.outcomes} onChange={v => set('outcomes', v)} placeholder="A measurable or meaningful outcome" />
+      </div>
+
+      <div style={s.actionsRow}>
+        <button type="submit" style={{...s.saveBtn, opacity: saving ? .6 : 1}} disabled={saving}>
+          {saving ? 'Saving…' : isNew ? 'Add Experience' : 'Save Changes'}
+        </button>
+        {!isNew && (
+          <Link to={`/experience/${form.id}`} target="_blank" style={s.previewBtn}>Preview ↗</Link>
+        )}
+        {!isNew && (
+          <button type="button" style={s.deleteBtn} onClick={() => onDelete(form.id)}>Delete</button>
+        )}
+      </div>
+    </form>
+  )
+}
+
+function LoginScreen({ onLogin }) {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const { token } = await login(username, password)
+      localStorage.setItem('admin_token', token)
+      onLogin()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'var(--font)'}}>
+      <div style={{width:'100%',maxWidth:380,padding:'0 24px'}}>
+        <div style={{textAlign:'center',marginBottom:40}}>
+          <div style={{fontSize:11,letterSpacing:'.12em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:14}}>Portfolio Admin</div>
+          <h1 style={{fontSize:28,fontWeight:600,letterSpacing:'-.045em',color:'#fff',marginBottom:8}}>Sign in</h1>
+          <p style={{fontSize:13,color:'var(--g600)'}}>Access restricted to authorized users only.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{background:'var(--surf)',border:'.5px solid var(--border)',borderRadius:18,padding:'32px 28px',display:'flex',flexDirection:'column',gap:16}}>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            <label style={{fontSize:11,letterSpacing:'.08em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500}}>Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder="Username"
+              autoComplete="username"
+              required
+              style={{background:'rgba(255,255,255,.04)',border:'.5px solid var(--border)',borderRadius:10,padding:'11px 14px',fontSize:14,color:'#fff',fontFamily:'var(--font)',outline:'none'}}
+              onFocus={e=>e.target.style.borderColor='rgba(46,202,139,.4)'}
+              onBlur={e=>e.target.style.borderColor='var(--border)'}
+            />
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            <label style={{fontSize:11,letterSpacing:'.08em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500}}>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Password"
+              autoComplete="current-password"
+              required
+              style={{background:'rgba(255,255,255,.04)',border:'.5px solid var(--border)',borderRadius:10,padding:'11px 14px',fontSize:14,color:'#fff',fontFamily:'var(--font)',outline:'none'}}
+              onFocus={e=>e.target.style.borderColor='rgba(46,202,139,.4)'}
+              onBlur={e=>e.target.style.borderColor='var(--border)'}
+            />
+          </div>
+
+          {error && (
+            <div style={{fontSize:12,color:'#ff6b6b',background:'rgba(255,60,60,.08)',border:'.5px solid rgba(255,60,60,.2)',borderRadius:8,padding:'10px 14px'}}>
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{marginTop:4,padding:'12px',background:'var(--teal)',border:'none',borderRadius:10,fontSize:14,fontWeight:600,color:'#000',cursor:loading?'not-allowed':'pointer',opacity:loading?.7:1,letterSpacing:'-.01em',transition:'opacity .2s'}}
+          >
+            {loading ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
+
+        <p style={{textAlign:'center',marginTop:20,fontSize:12,color:'rgba(255,255,255,.1)'}}>
+          Portfolio · Mohammed Alazaar
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function Admin() {
-  const [projects, setProjects] = useState(() => getProjects())
-  const [selected, setSelected] = useState(null) // id or 'new'
+  const [authed, setAuthed] = useState(false)
+  const [authChecking, setAuthChecking] = useState(true)
+  const [tab, setTab] = useState('projects') // 'projects' | 'experience'
+  const [projects, setProjects] = useState([])
+  const [experiences, setExperiences] = useState([])
+  const [selected, setSelected] = useState(null)
   const [toast, setToast] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    verifyToken()
+      .then(({ valid }) => { if (valid) setAuthed(true) })
+      .catch(() => {})
+      .finally(() => setAuthChecking(false))
+  }, [])
+
+  useEffect(() => {
+    if (!authed) return
+    getProjects().then(setProjects).catch(console.error)
+    getExperiences().then(setExperiences).catch(console.error)
+  }, [authed])
+
+  const handleLogin = () => setAuthed(true)
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token')
+    setAuthed(false)
+    setProjects([])
+    setSelected(null)
+  }
 
   const showToast = (msg) => {
     setToast(msg)
     setTimeout(() => setToast(''), 2500)
   }
 
-  const handleSave = (updated) => {
-    let next
-    if (selected === 'new') {
-      if (projects.find(p => p.id === updated.id)) {
-        alert(`A project with ID "${updated.id}" already exists. Choose a different ID.`)
-        return
+  const handleSave = async (updated) => {
+    setSaving(true)
+    try {
+      if (tab === 'projects') {
+        if (selected === 'new') {
+          const created = await createProject(updated)
+          setProjects(prev => [...prev, created])
+          setSelected(created.id)
+          showToast('Project added!')
+        } else {
+          const saved = await updateProject(selected, updated)
+          setProjects(prev => prev.map(p => p.id === selected ? saved : p))
+          setSelected(saved.id)
+          showToast('Changes saved!')
+        }
+      } else {
+        if (selected === 'new') {
+          const created = await createExperience(updated)
+          setExperiences(prev => [...prev, created])
+          setSelected(created.id)
+          showToast('Experience added!')
+        } else {
+          const saved = await updateExperience(selected, updated)
+          setExperiences(prev => prev.map(e => e.id === selected ? saved : e))
+          setSelected(saved.id)
+          showToast('Changes saved!')
+        }
       }
-      next = [...projects, updated]
-    } else {
-      next = projects.map(p => p.id === selected ? updated : p)
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setSaving(false)
     }
-    saveProjects(next)
-    setProjects(next)
-    setSelected(updated.id)
-    showToast(selected === 'new' ? 'Project added!' : 'Changes saved!')
   }
 
-  const handleDelete = (id) => {
-    if (!confirm('Delete this project? This cannot be undone.')) return
-    const next = projects.filter(p => p.id !== id)
-    saveProjects(next)
-    setProjects(next)
-    setSelected(null)
-    showToast('Project deleted.')
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this entry? This cannot be undone.')) return
+    try {
+      if (tab === 'projects') {
+        await deleteProject(id)
+        setProjects(prev => prev.filter(p => p.id !== id))
+      } else {
+        await deleteExperience(id)
+        setExperiences(prev => prev.filter(e => e.id !== id))
+      }
+      setSelected(null)
+      showToast('Deleted.')
+    } catch (err) {
+      alert(err.message)
+    }
   }
+
+  if (authChecking) {
+    return (
+      <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <p style={{color:'var(--g600)',fontSize:13}}>Checking session…</p>
+      </div>
+    )
+  }
+
+  if (!authed) return <LoginScreen onLogin={handleLogin} />
 
   const currentProject = selected === 'new' ? EMPTY_PROJECT : projects.find(p => p.id === selected)
+  const currentExperience = selected === 'new' ? EMPTY_EXPERIENCE : experiences.find(e => e.id === selected)
 
   return (
     <div style={s.wrap}>
@@ -388,50 +646,79 @@ export default function Admin() {
           Portfolio
         </Link>
         <span style={s.navTitle}>Admin Dashboard</span>
-        <span style={{fontSize:12,color:'var(--g600)'}}>{projects.length} projects</span>
+        <div style={{display:'flex',alignItems:'center',gap:16}}>
+          <span style={{fontSize:12,color:'var(--g600)'}}>{projects.length} projects · {experiences.length} exp</span>
+          <button
+            onClick={handleLogout}
+            style={{fontSize:12,color:'var(--g600)',background:'none',border:'.5px solid var(--border)',borderRadius:8,padding:'4px 12px',cursor:'pointer',transition:'color .2s,border-color .2s',fontFamily:'var(--font)'}}
+            onMouseEnter={e=>{e.currentTarget.style.color='#ff6b6b';e.currentTarget.style.borderColor='rgba(255,60,60,.3)'}}
+            onMouseLeave={e=>{e.currentTarget.style.color='var(--g600)';e.currentTarget.style.borderColor='var(--border)'}}
+          >
+            Sign out
+          </button>
+        </div>
       </nav>
 
       <div style={s.layout}>
-        {/* Sidebar */}
         <aside style={s.sidebar}>
-          <div style={s.sideHeader}>Projects</div>
-          {projects.map(p => (
-            <div
-              key={p.id}
-              onClick={() => setSelected(p.id)}
-              style={{
-                ...s.sideItem,
-                background: selected === p.id ? 'rgba(255,255,255,.06)' : 'transparent',
-                borderColor: selected === p.id ? 'var(--border-h)' : 'transparent',
-              }}
-              onMouseEnter={e => { if (selected !== p.id) e.currentTarget.style.background = 'rgba(255,255,255,.03)' }}
-              onMouseLeave={e => { if (selected !== p.id) e.currentTarget.style.background = 'transparent' }}
+          {/* Tab switcher */}
+          <div style={{display:'flex',gap:4,marginBottom:16,background:'rgba(255,255,255,.04)',borderRadius:10,padding:4}}>
+            {['projects','experience'].map(t => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => { setTab(t); setSelected(null) }}
+                style={{flex:1,padding:'6px 0',borderRadius:7,border:'none',cursor:'pointer',fontSize:12,fontWeight:500,letterSpacing:'-.01em',fontFamily:'var(--font)',transition:'background .2s, color .2s',
+                  background: tab === t ? 'rgba(255,255,255,.1)' : 'transparent',
+                  color: tab === t ? '#fff' : 'var(--g600)',
+                }}
+              >
+                {t === 'projects' ? 'Projects' : 'Experience'}
+              </button>
+            ))}
+          </div>
+
+          <div style={s.sideHeader}>{tab === 'projects' ? 'Projects' : 'Experience'}</div>
+
+          {tab === 'projects' && projects.map(p => (
+            <div key={p.id} onClick={() => setSelected(p.id)}
+              style={{...s.sideItem, background: selected===p.id?'rgba(255,255,255,.06)':'transparent', borderColor: selected===p.id?'var(--border-h)':'transparent'}}
+              onMouseEnter={e => { if (selected!==p.id) e.currentTarget.style.background='rgba(255,255,255,.03)' }}
+              onMouseLeave={e => { if (selected!==p.id) e.currentTarget.style.background='transparent' }}
             >
               <div style={{overflow:'hidden'}}>
                 <div style={s.sideItemTitle}>{p.title.split('—')[0].trim()}</div>
                 <div style={s.sideItemSub}>{p.eyebrow}</div>
               </div>
-              {selected === p.id && (
-                <div style={{width:6,height:6,borderRadius:'50%',background:'var(--teal)',flexShrink:0}} />
-              )}
+              {selected===p.id && <div style={{width:6,height:6,borderRadius:'50%',background:'var(--teal)',flexShrink:0}} />}
             </div>
           ))}
 
-          <button
-            type="button"
-            style={s.addBtn}
-            onClick={() => setSelected('new')}
+          {tab === 'experience' && experiences.map(e => (
+            <div key={e.id} onClick={() => setSelected(e.id)}
+              style={{...s.sideItem, background: selected===e.id?'rgba(255,255,255,.06)':'transparent', borderColor: selected===e.id?'var(--border-h)':'transparent'}}
+              onMouseEnter={ev => { if (selected!==e.id) ev.currentTarget.style.background='rgba(255,255,255,.03)' }}
+              onMouseLeave={ev => { if (selected!==e.id) ev.currentTarget.style.background='transparent' }}
+            >
+              <div style={{overflow:'hidden'}}>
+                <div style={s.sideItemTitle}>{e.company}</div>
+                <div style={s.sideItemSub}>{e.role}</div>
+              </div>
+              {selected===e.id && <div style={{width:6,height:6,borderRadius:'50%',background:'var(--teal)',flexShrink:0}} />}
+            </div>
+          ))}
+
+          <button type="button" style={s.addBtn} onClick={() => setSelected('new')}
             onMouseEnter={e=>e.currentTarget.style.background='rgba(46,202,139,.18)'}
             onMouseLeave={e=>e.currentTarget.style.background='var(--teal-dim)'}
           >
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{width:14,height:14}}>
               <path d="M8 3v10M3 8h10"/>
             </svg>
-            Add New Project
+            Add {tab === 'projects' ? 'Project' : 'Experience'}
           </button>
         </aside>
 
-        {/* Main content */}
         <main style={s.main}>
           {!selected ? (
             <div style={s.empty}>
@@ -439,16 +726,12 @@ export default function Admin() {
                 <rect x="8" y="8" width="32" height="32" rx="4"/>
                 <path d="M24 18v12M18 24h12"/>
               </svg>
-              <p style={{fontSize:14,color:'var(--g600)'}}>Select a project to edit, or add a new one.</p>
+              <p style={{fontSize:14,color:'var(--g600)'}}>Select an entry to edit, or add a new one.</p>
             </div>
-          ) : currentProject ? (
-            <ProjectForm
-              key={selected}
-              project={currentProject}
-              onSave={handleSave}
-              onDelete={handleDelete}
-              isNew={selected === 'new'}
-            />
+          ) : tab === 'projects' && currentProject ? (
+            <ProjectForm key={selected} project={currentProject} onSave={handleSave} onDelete={handleDelete} isNew={selected==='new'} saving={saving} />
+          ) : tab === 'experience' && currentExperience ? (
+            <ExperienceForm key={selected} experience={currentExperience} onSave={handleSave} onDelete={handleDelete} isNew={selected==='new'} saving={saving} />
           ) : null}
         </main>
       </div>

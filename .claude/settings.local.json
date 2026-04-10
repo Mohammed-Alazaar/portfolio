@@ -6,7 +6,15 @@
       "Bash(npm create:*)",
       "Bash(npm --version)",
       "Bash(npm install:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(node seed.js)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const mongoose = require\\('mongoose'\\); mongoose.connect\\(process.env.MONGODB_URI\\).then\\(async \\(\\) => { const P = require\\('./models/Project'\\); const count = await P.countDocuments\\(\\); console.log\\('docs:', count\\); mongoose.disconnect\\(\\); }\\)\")",
+      "Bash(node index.js)",
+      "Bash(netstat -ano)",
+      "Bash(awk '{print $5}')",
+      "Bash(taskkill:*)",
+      "Bash(curl:*)",
+      "Bash(node seed-experience.js)"
     ]
   }
 }

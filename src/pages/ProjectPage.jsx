@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getProjectById } from '../data/projects'
+import { getProjectById } from '../api'
 import FeatureIcon from '../components/FeatureIcon'
 
 const s = {
@@ -45,7 +45,12 @@ const s = {
   jp: { fontSize:10,letterSpacing:'.1em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:7 },
   jb: { background:'var(--surf)',border:'.5px solid var(--border)',borderRadius:14,padding:'20px 22px',flex:1,transition:'border-color .25s' },
   jnum: { width:40,flexShrink:0,textAlign:'right',fontSize:11,color:'rgba(255,255,255,.12)',paddingTop:9,fontWeight:300 },
-  sf: { background:'var(--surf)',border:'.5px solid var(--border)',borderRadius:22,padding:'52px 44px',display:'flex',alignItems:'center',justifyContent:'center',gap:52,flexWrap:'wrap',marginTop:4 },
+  sf: { marginTop:8 },
+  browser: { background:'#0d0d0d',border:'.5px solid rgba(255,255,255,.1)',borderRadius:14,overflow:'hidden',boxShadow:'0 40px 100px rgba(0,0,0,.7)' },
+  browserBar: { height:40,background:'#161616',display:'flex',alignItems:'center',padding:'0 16px',gap:10,borderBottom:'.5px solid rgba(255,255,255,.07)' },
+  browserDots: { display:'flex',gap:6,flexShrink:0 },
+  browserUrl: { flex:1,background:'rgba(255,255,255,.05)',borderRadius:6,height:24,display:'flex',alignItems:'center',padding:'0 10px',gap:6 },
+  browserContent: { minHeight:360,position:'relative',overflow:'hidden' },
   ol: { listStyle:'none',marginTop:30 },
   olItem: { display:'flex',alignItems:'baseline',gap:14,fontSize:'clamp(15px,1.6vw,18px)',color:'var(--g400)',padding:'16px 0',borderBottom:'.5px solid rgba(255,255,255,.05)',lineHeight:1.55,letterSpacing:'-.02em',fontWeight:300,transition:'color .2s' },
   foot: { borderTop:'.5px solid var(--border)',padding:'28px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',maxWidth:960,margin:'0 auto' },
@@ -56,8 +61,16 @@ const s = {
 export default function ProjectPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const project = getProjectById(id)
+  const [project, setProject] = useState(null)
+  const [loading, setLoading] = useState(true)
   const dotsRef = useRef(null)
+
+  useEffect(() => {
+    getProjectById(id)
+      .then(setProject)
+      .catch(() => navigate('/'))
+      .finally(() => setLoading(false))
+  }, [id])
 
   useEffect(() => {
     if (!project) return
@@ -77,6 +90,14 @@ export default function ProjectPage() {
 
     return () => { obs.disconnect(); dobs.disconnect() }
   }, [project])
+
+  if (loading) {
+    return (
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'100vh'}}>
+        <p style={{color:'var(--g600)',fontSize:13,letterSpacing:'-.01em'}}>Loading…</p>
+      </div>
+    )
+  }
 
   if (!project) {
     return (
@@ -232,26 +253,87 @@ export default function ProjectPage() {
         <div style={{...s.sec,textAlign:'center'}}>
           <div className="r" style={s.lbl}>Visual showcase</div>
           <h2 className="r d1" style={{...s.sh,marginLeft:'auto',marginRight:'auto'}}>The Product</h2>
+
           <div className="r d2" style={s.sf}>
-            <div style={{display:'flex',flexDirection:'column',gap:8}}>
-              <div style={{display:'flex',alignItems:'center',gap:12}}>
-                <div style={{width:42,height:42,background:'var(--teal)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                  <svg viewBox="0 0 24 24" style={{width:20,height:20,stroke:'#000',fill:'none',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'}}>
-                    <path d="M12 2l3.5 7 7.5 1-5.5 5.5 1.5 7.5L12 19.5 5 23l1.5-7.5L1 10l7.5-1z"/>
-                  </svg>
+            {/* Browser mockup */}
+            <div style={s.browser}>
+              {/* Chrome bar */}
+              <div style={s.browserBar}>
+                <div style={s.browserDots}>
+                  {['#ff5f57','#febc2e','#28c840'].map(c => (
+                    <div key={c} style={{width:12,height:12,borderRadius:'50%',background:c,opacity:.9}} />
+                  ))}
                 </div>
-                <div style={{fontSize:30,fontWeight:600,letterSpacing:'-.055em',color:'#fff'}}>{p.brand.name}</div>
+                <div style={s.browserUrl}>
+                  <svg viewBox="0 0 12 12" fill="none" style={{width:10,height:10,flexShrink:0}}>
+                    <circle cx="6" cy="6" r="4.5" stroke="rgba(255,255,255,.25)" strokeWidth="1"/>
+                    <path d="M6 1.5v9M1.5 6h9M2.5 3.5C3.5 4.5 4.5 5 6 5s2.5-.5 3.5-1.5M2.5 8.5C3.5 7.5 4.5 7 6 7s2.5.5 3.5 1.5" stroke="rgba(255,255,255,.25)" strokeWidth=".8"/>
+                  </svg>
+                  <span style={{fontSize:11,color:'rgba(255,255,255,.3)',letterSpacing:'-.01em',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                    {p.url || `${p.brand.name.toLowerCase().replace(/\s/g,'-')}.app`}
+                  </span>
+                </div>
+                {p.url && (
+                  <a
+                    href={p.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{flexShrink:0,fontSize:11,color:'var(--teal)',letterSpacing:'-.01em',display:'flex',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 10px',background:'var(--teal-dim)',borderRadius:6,border:'.5px solid rgba(46,202,139,.25)'}}
+                  >
+                    Open ↗
+                  </a>
+                )}
               </div>
-              <div style={{fontSize:11,color:'var(--g600)',letterSpacing:'-.01em'}}>{p.brand.tagline}</div>
-            </div>
-            <div style={{width:104,background:'#1a1a1a',borderRadius:24,border:'1px solid rgba(255,255,255,.1)',overflow:'hidden',flexShrink:0}}>
-              <div style={{height:20,background:'#111',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <div style={{width:44,height:9,background:'#000',borderRadius:5}} />
-              </div>
-              <div style={{padding:'14px 10px 18px',minHeight:178,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:8}}>
-                <div style={{fontSize:20,fontWeight:600,color:'var(--teal)',letterSpacing:'-.05em'}}>{p.brand.initials}</div>
-                <div style={{fontSize:8,color:'var(--g600)',textAlign:'center',lineHeight:1.5}}>{p.brand.name}<br/>Platform</div>
-                <div style={{marginTop:6,width:70,height:24,background:'var(--teal)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:500,color:'#000',letterSpacing:'.01em'}}>Open</div>
+
+              {/* Content area */}
+              <div style={s.browserContent}>
+                {/* Gradient BG */}
+                <div style={{position:'absolute',inset:0,background:'radial-gradient(ellipse at 30% 40%,rgba(46,202,139,.07) 0%,transparent 60%)',pointerEvents:'none'}} />
+
+                {/* Product card layout */}
+                <div style={{padding:'40px 40px 48px',display:'flex',flexDirection:'column',gap:32}}>
+                  {/* Header row */}
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:14}}>
+                      <div style={{width:44,height:44,background:'linear-gradient(135deg,var(--teal),rgba(46,202,139,.4))',borderRadius:11,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,fontWeight:700,color:'#000',letterSpacing:'-.03em',flexShrink:0}}>
+                        {p.brand.initials}
+                      </div>
+                      <div>
+                        <div style={{fontSize:18,fontWeight:600,letterSpacing:'-.04em',color:'#fff'}}>{p.brand.name}</div>
+                        <div style={{fontSize:11,color:'var(--g600)',marginTop:1}}>{p.brand.tagline}</div>
+                      </div>
+                    </div>
+                    {p.url && (
+                      <a
+                        href={p.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{fontSize:13,fontWeight:500,color:'#000',background:'var(--teal)',padding:'9px 20px',borderRadius:10,textDecoration:'none',letterSpacing:'-.01em'}}
+                      >
+                        Launch →
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Feature grid mini */}
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12}}>
+                    {p.features.map((f, i) => (
+                      <div key={i} style={{background:'rgba(255,255,255,.03)',border:'.5px solid rgba(255,255,255,.07)',borderRadius:12,padding:'16px 18px',textAlign:'left'}}>
+                        <div style={{fontSize:11,letterSpacing:'.08em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:6}}>{f.title}</div>
+                        <div style={{fontSize:12,color:'var(--g600)',lineHeight:1.55,letterSpacing:'-.01em'}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Tech stack bar */}
+                  <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',paddingTop:8,borderTop:'.5px solid rgba(255,255,255,.06)'}}>
+                    <span style={{fontSize:11,color:'rgba(255,255,255,.2)',letterSpacing:'-.01em',marginRight:4}}>Built with</span>
+                    {p.tags.slice(0,6).map(t => (
+                      <span key={t} style={{fontSize:11,color:'var(--g600)',background:'rgba(255,255,255,.04)',border:'.5px solid rgba(255,255,255,.08)',padding:'3px 10px',borderRadius:980,letterSpacing:'-.01em'}}>{t}</span>
+                    ))}
+                    {p.tags.length > 6 && <span style={{fontSize:11,color:'rgba(255,255,255,.2)'}}>+{p.tags.length-6} more</span>}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
