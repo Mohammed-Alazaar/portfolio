@@ -13,11 +13,6 @@ const s = {
   navName: { fontSize:14,fontWeight:500,letterSpacing:'-.02em',color:'#fff' },
   navLinks: { display:'flex',gap:24,alignItems:'center' },
   navLink: { fontSize:13,color:'var(--g400)',transition:'color .2s',cursor:'pointer' },
-  adminBtn: {
-    fontSize:12,color:'var(--teal)',background:'var(--teal-dim)',
-    border:'.5px solid rgba(46,202,139,.25)',padding:'5px 14px',borderRadius:980,
-    cursor:'pointer',transition:'background .2s',
-  },
   hero: {
     borderBottom:'.5px solid var(--border)',
     position:'relative',overflow:'hidden',
@@ -130,7 +125,6 @@ export default function Home() {
           <a href="mailto:mhmdalazr@gmail.com" style={s.navLink}>Contact</a>
           <a href="https://linkedin.com/in/mohammedalazaar" target="_blank" rel="noreferrer" style={s.navLink}>LinkedIn</a>
           <a href="https://github.com/mhmdalazr" target="_blank" rel="noreferrer" style={s.navLink}>GitHub</a>
-          <Link to="/admin" style={s.adminBtn}>Admin</Link>
         </div>
       </nav>
 
