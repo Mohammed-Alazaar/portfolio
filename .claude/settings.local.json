@@ -14,7 +14,8 @@
       "Bash(awk '{print $5}')",
       "Bash(taskkill:*)",
       "Bash(curl:*)",
-      "Bash(node seed-experience.js)"
+      "Bash(node seed-experience.js)",
+      "Bash(grep -v '^0$')"
     ]
   }
 }
