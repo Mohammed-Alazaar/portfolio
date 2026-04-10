@@ -5,7 +5,13 @@ const cors = require('cors')
 
 const app = express()
 
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:4173'] }))
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:4173',
+    'https://mohammed-alazaar.github.io',
+  ]
+}))
 app.use(express.json())
 
 mongoose
