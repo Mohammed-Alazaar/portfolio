@@ -38,8 +38,11 @@ app.use('/api/auth/login', rateLimit({
 }))
 
 // DB
+const MONGODB_URI = process.env.MONGODB_URI ||
+  `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.4iztyjv.mongodb.net/portfolio?appName=Cluster0`
+
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => { console.error('MongoDB connection error:', err.message); process.exit(1) })
 
