@@ -19,6 +19,7 @@ app.use(cors({
   ]
 }))
 
+app.set('trust proxy', 1)
 app.use(express.json({ limit: '50kb' }))
 
 // Rate limiting — general
