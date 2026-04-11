@@ -104,8 +104,8 @@ export default function Home() {
         <span style={s.navName}>Mohammed Alazaar</span>
         <div style={s.navLinks}>
           <a href="mailto:mhmdalazr@gmail.com" style={s.navLink}>Contact</a>
-          <a href="https://linkedin.com/in/mohammedalazaar" target="_blank" rel="noreferrer" style={s.navLink}>LinkedIn</a>
-          <a href="https://github.com/mhmdalazr" target="_blank" rel="noreferrer" style={s.navLink}>GitHub</a>
+          <a href="https://www.linkedin.com/in/mohammed-alazaar/" target="_blank" rel="noreferrer" style={s.navLink}>LinkedIn</a>
+          <a href="https://github.com/Mohammed-Alazaar" target="_blank" rel="noreferrer" style={s.navLink}>GitHub</a>
         </div>
       </nav>
 
@@ -123,7 +123,7 @@ export default function Home() {
               <span style={{color:'rgba(255,255,255,.12)'}}>·</span>
               <span style={s.contactLink}>Ankara, Türkiye</span>
               <span style={{color:'rgba(255,255,255,.12)'}}>·</span>
-              <a href="https://linkedin.com/in/mohammedalazaar" target="_blank" rel="noreferrer" style={s.contactLink}>LinkedIn</a>
+              <a href="https://www.linkedin.com/in/mohammed-alazaar/" target="_blank" rel="noreferrer" style={s.contactLink}>LinkedIn</a>
             </div>
             <div className="r-hero" style={s.tags}>
               {['Go-To-Market','Full-Stack Dev','SEO Architecture','HubSpot','GA4 · GTM','Node.js','MongoDB','React','Figma'].map(t => (
