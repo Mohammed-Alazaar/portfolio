@@ -20,8 +20,6 @@ const s = {
   heroInner: {
     maxWidth:1040,margin:'0 auto',
     padding:'clamp(72px,9vw,120px) 24px clamp(56px,7vw,96px)',
-    display:'grid',gridTemplateColumns:'1fr auto',gap:'clamp(32px,5vw,72px)',
-    alignItems:'center',
   },
   heroBg: {
     content:'',position:'absolute',width:820,height:560,borderRadius:'50%',
@@ -151,10 +149,6 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="r-hero hero-img-wrap" style={s.heroImgWrap}>
-            <img src={`${import.meta.env.BASE_URL}hero.jpg`} alt="Mohammed Alazaar" style={s.heroImg} />
-            <div style={s.heroImgOverlay} />
-          </div>
         </div>
       </section>
 
@@ -293,16 +287,9 @@ export default function Home() {
       <style>{`
         @media(max-width:740px){
           .about-grid { grid-template-columns:1fr !important; }
-          .hero-inner-grid { grid-template-columns:1fr !important; }
-          .hero-img-wrap { width:clamp(140px,48vw,220px) !important; margin:0 auto; }
-        }
-        @media(max-width:600px){
-          .hero-inner-grid { flex-direction:column-reverse !important; display:flex !important; }
         }
         .r-hero { opacity:0; transform:translateY(24px); transition:opacity .7s cubic-bezier(.25,.46,.45,.94),transform .7s cubic-bezier(.25,.46,.45,.94); }
         .r-hero.on { opacity:1; transform:none; }
-        .r-hero.hero-img-wrap { transform:translateY(24px) scale(.97); }
-        .r-hero.hero-img-wrap.on { transform:none; }
       `}</style>
     </>
   )
