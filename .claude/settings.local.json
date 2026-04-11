@@ -15,7 +15,9 @@
       "Bash(taskkill:*)",
       "Bash(curl:*)",
       "Bash(node seed-experience.js)",
-      "Bash(grep -v '^0$')"
+      "Bash(grep -v '^0$')",
+      "Bash(gh run:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
