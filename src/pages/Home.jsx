@@ -18,40 +18,23 @@ const s = {
     position:'relative',overflow:'hidden',
   },
   heroInner: {
-    maxWidth:1040,margin:'0 auto',
-    padding:'clamp(72px,9vw,120px) 24px clamp(56px,7vw,96px)',
+    maxWidth:760,margin:'0 auto',
+    padding:'clamp(80px,10vw,130px) 24px clamp(64px,8vw,104px)',
+    display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',
   },
   heroBg: {
-    content:'',position:'absolute',width:820,height:560,borderRadius:'50%',
-    background:'radial-gradient(ellipse,rgba(46,202,139,.06) 0%,transparent 65%)',
-    top:-80,left:'20%',transform:'translateX(-50%)',pointerEvents:'none',
+    content:'',position:'absolute',width:900,height:600,borderRadius:'50%',
+    background:'radial-gradient(ellipse,rgba(46,202,139,.07) 0%,transparent 65%)',
+    top:-100,left:'50%',transform:'translateX(-50%)',pointerEvents:'none',
   },
-  heroLeft: { display:'flex',flexDirection:'column',alignItems:'flex-start' },
-  eyebrow: { fontSize:11,letterSpacing:'.12em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:20 },
-  h1: { fontSize:'clamp(36px,5.5vw,68px)',fontWeight:600,letterSpacing:'-.045em',lineHeight:1.05,color:'#fff',marginBottom:18 },
-  sub: { fontSize:'clamp(14px,1.5vw,17px)',color:'var(--g400)',maxWidth:480,marginBottom:14,lineHeight:1.72,fontWeight:300,letterSpacing:'-.02em' },
-  contactRow: { display:'flex',gap:14,flexWrap:'wrap',marginBottom:32,marginTop:6 },
+  heroLeft: { display:'flex',flexDirection:'column',alignItems:'center' },
+  eyebrow: { fontSize:11,letterSpacing:'.14em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:22 },
+  h1: { fontSize:'clamp(42px,7vw,88px)',fontWeight:600,letterSpacing:'-.05em',lineHeight:1.02,color:'#fff',marginBottom:22 },
+  sub: { fontSize:'clamp(15px,1.6vw,18px)',color:'var(--g400)',maxWidth:580,marginBottom:16,lineHeight:1.75,fontWeight:300,letterSpacing:'-.02em' },
+  contactRow: { display:'flex',gap:14,flexWrap:'wrap',justifyContent:'center',marginBottom:36,marginTop:8 },
   contactLink: { fontSize:12,color:'var(--g600)',letterSpacing:'-.01em',transition:'color .2s' },
-  tags: { display:'flex',flexWrap:'wrap',gap:7 },
+  tags: { display:'flex',flexWrap:'wrap',gap:7,justifyContent:'center' },
   tag: { fontSize:12,color:'var(--g400)',background:'var(--surf)',border:'.5px solid var(--border)',padding:'5px 14px',borderRadius:980,letterSpacing:'-.01em' },
-  heroImgWrap: {
-    position:'relative',flexShrink:0,
-    width:'clamp(200px,22vw,300px)',
-    aspectRatio:'3/4',
-    borderRadius:20,overflow:'hidden',
-    border:'.5px solid rgba(255,255,255,.07)',
-    boxShadow:'0 32px 80px rgba(0,0,0,.6),0 0 0 .5px rgba(46,202,139,.12)',
-  },
-  heroImg: {
-    width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top',
-    display:'block',
-    filter:'brightness(.95) contrast(1.04)',
-  },
-  heroImgOverlay: {
-    position:'absolute',inset:0,
-    background:'linear-gradient(to top,rgba(0,0,0,.45) 0%,transparent 55%)',
-    pointerEvents:'none',
-  },
   section: { maxWidth:1040,margin:'0 auto',padding:'clamp(56px,7vw,88px) 24px' },
   lbl: { fontSize:11,letterSpacing:'.1em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:14 },
   sh: { fontSize:'clamp(26px,3.5vw,40px)',fontWeight:600,letterSpacing:'-.04em',lineHeight:1.1,color:'#fff',marginBottom:36 },
@@ -128,7 +111,7 @@ export default function Home() {
 
       <section style={s.hero} id="hero">
         <div style={s.heroBg} />
-        <div className="hero-inner-grid" style={s.heroInner}>
+        <div style={s.heroInner}>
           <div style={s.heroLeft}>
             <div className="r-hero" style={s.eyebrow}>Growth · Full-Stack · Marketing</div>
             <h1 className="r-hero" style={s.h1}>Mohammed<br/>Alazaar</h1>
