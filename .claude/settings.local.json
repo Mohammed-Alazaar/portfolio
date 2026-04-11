@@ -17,7 +17,14 @@
       "Bash(node seed-experience.js)",
       "Bash(grep -v '^0$')",
       "Bash(gh run:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:mohammed-alazaar.github.io)",
+      "Bash(cat vite.config.js)",
+      "Bash(cat vite.config.ts)",
+      "Bash(cat src/main.jsx)",
+      "Bash(cat src/main.tsx)",
+      "Bash(cat src/App.jsx)",
+      "Bash(cat src/App.tsx)"
     ]
   }
 }
