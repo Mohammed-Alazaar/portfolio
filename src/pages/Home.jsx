@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getProjects, getExperiences } from '../api'
+import { projects, experiences } from '../data'
 
 const s = {
   nav: {
@@ -76,15 +76,6 @@ const s = {
 }
 
 export default function Home() {
-  const [projects, setProjects] = useState([])
-  const [projError, setProjError] = useState(false)
-  const [experiences, setExperiences] = useState([])
-
-  useEffect(() => {
-    getProjects().then(setProjects).catch(() => setProjError(true))
-    getExperiences().then(setExperiences).catch(console.error)
-  }, [])
-
   useEffect(() => {
     document.querySelectorAll('.r-hero').forEach((el) => el.classList.add('on'))
   }, [])
@@ -96,7 +87,7 @@ export default function Home() {
     )
     document.querySelectorAll('.r').forEach((el) => obs.observe(el))
     return () => obs.disconnect()
-  }, [projects])
+  }, [])
 
   return (
     <>
@@ -139,11 +130,6 @@ export default function Home() {
         <div style={s.section}>
           <div className="r" style={s.lbl}>Selected Work</div>
           <h2 className="r d1" style={s.sh}>Projects</h2>
-          {projError && (
-            <div style={{fontSize:13,color:'#ff6b6b',background:'rgba(255,60,60,.07)',border:'.5px solid rgba(255,60,60,.15)',borderRadius:10,padding:'12px 18px',marginBottom:24,letterSpacing:'-.01em'}}>
-              Could not connect to the server. Make sure the backend is running on port 3001.
-            </div>
-          )}
           <div style={s.grid}>
             {projects.map((p, i) => (
               <Link

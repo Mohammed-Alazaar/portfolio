@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getProjectById } from '../api'
+import { projects } from '../data'
 import FeatureIcon from '../components/FeatureIcon'
 
 const s = {
@@ -61,19 +61,11 @@ const s = {
 export default function ProjectPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [project, setProject] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const project = projects.find((p) => p.id === id) || null
   const dotsRef = useRef(null)
 
   useEffect(() => {
-    getProjectById(id)
-      .then(setProject)
-      .catch(() => navigate('/'))
-      .finally(() => setLoading(false))
-  }, [id])
-
-  useEffect(() => {
-    if (!project) return
+    if (!project) { navigate('/'); return }
     const obs = new IntersectionObserver(
       (es) => es.forEach((e) => { if (e.isIntersecting) e.target.classList.add('on') }),
       { threshold: 0.13 }
@@ -90,14 +82,6 @@ export default function ProjectPage() {
 
     return () => { obs.disconnect(); dobs.disconnect() }
   }, [project])
-
-  if (loading) {
-    return (
-      <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'100vh'}}>
-        <p style={{color:'var(--g600)',fontSize:13,letterSpacing:'-.01em'}}>Loading…</p>
-      </div>
-    )
-  }
 
   if (!project) {
     return (

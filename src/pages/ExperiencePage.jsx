@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getExperienceById } from '../api'
+import { experiences } from '../data'
 import FeatureIcon from '../components/FeatureIcon'
 
 const s = {
@@ -50,19 +50,11 @@ const s = {
 export default function ExperiencePage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [exp, setExp] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const exp = experiences.find((e) => e.id === id) || null
   const dotsRef = useRef(null)
 
   useEffect(() => {
-    getExperienceById(id)
-      .then(setExp)
-      .catch(() => navigate('/'))
-      .finally(() => setLoading(false))
-  }, [id])
-
-  useEffect(() => {
-    if (!exp) return
+    if (!exp) { navigate('/'); return }
     const obs = new IntersectionObserver(
       (es) => es.forEach((e) => { if (e.isIntersecting) e.target.classList.add('on') }),
       { threshold: 0.13 }
@@ -79,14 +71,6 @@ export default function ExperiencePage() {
 
     return () => { obs.disconnect(); dobs.disconnect() }
   }, [exp])
-
-  if (loading) {
-    return (
-      <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'100vh'}}>
-        <p style={{color:'var(--g600)',fontSize:13,letterSpacing:'-.01em'}}>Loading…</p>
-      </div>
-    )
-  }
 
   if (!exp) {
     return (
