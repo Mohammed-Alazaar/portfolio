@@ -12,7 +12,10 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+/* No global smooth-scroll: it would animate the browser's scroll-to-top on
+   route change and fight the instant reset in RouteChange. Deliberate smooth
+   scrolling (nav dots, back-to-top, "view my work") is done in JS with an
+   explicit behavior:'smooth'. */
 body {
   background: #000;
   color: var(--white);
