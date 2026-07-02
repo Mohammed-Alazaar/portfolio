@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { projects } from '../data'
 import FeatureIcon from '../components/FeatureIcon'
+import { usePageMeta } from '../components/usePageMeta'
 
 const s = {
   nav: {
@@ -63,6 +64,8 @@ export default function ProjectPage() {
   const navigate = useNavigate()
   const project = projects.find((p) => p.id === id) || null
   const dotsRef = useRef(null)
+
+  usePageMeta(project?.title, project?.description)
 
   useEffect(() => {
     if (!project) { navigate('/'); return }

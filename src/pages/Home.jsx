@@ -1,6 +1,15 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { projects, experiences } from '../data'
+import { trackContact, track } from '../analytics'
+import { usePageMeta } from '../components/usePageMeta'
+
+const stats = [
+  { value: '2', label: 'Production platforms built end-to-end' },
+  { value: '5', label: 'Languages served from a single codebase' },
+  { value: '18', label: 'Directories in one product launch' },
+  { value: '0→1', label: 'Marketing function built from scratch' },
+]
 
 const s = {
   nav: {
@@ -28,13 +37,35 @@ const s = {
     top:-100,left:'50%',transform:'translateX(-50%)',pointerEvents:'none',
   },
   heroLeft: { display:'flex',flexDirection:'column',alignItems:'center' },
-  eyebrow: { fontSize:11,letterSpacing:'.14em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:22 },
+  badge: {
+    display:'inline-flex',alignItems:'center',gap:8,fontSize:12,color:'var(--teal)',
+    background:'var(--teal-dim)',border:'.5px solid rgba(46,202,139,.25)',
+    padding:'6px 15px',borderRadius:980,letterSpacing:'-.01em',marginBottom:26,fontWeight:500,
+  },
+  ctaRow: { display:'flex',gap:12,flexWrap:'wrap',justifyContent:'center',marginBottom:28 },
+  btnPrimary: {
+    display:'inline-flex',alignItems:'center',gap:7,fontSize:14,fontWeight:500,
+    color:'#000',background:'var(--teal)',padding:'11px 26px',borderRadius:980,
+    letterSpacing:'-.01em',transition:'opacity .2s,transform .2s',
+  },
+  btnGhost: {
+    display:'inline-flex',alignItems:'center',gap:7,fontSize:14,fontWeight:400,
+    color:'#fff',background:'transparent',border:'.5px solid var(--border-h)',
+    padding:'11px 26px',borderRadius:980,letterSpacing:'-.01em',cursor:'pointer',
+    transition:'border-color .2s,background .2s',fontFamily:'var(--font)',
+  },
   h1: { fontSize:'clamp(42px,7vw,88px)',fontWeight:600,letterSpacing:'-.05em',lineHeight:1.02,color:'#fff',marginBottom:22 },
   sub: { fontSize:'clamp(15px,1.6vw,18px)',color:'var(--g400)',maxWidth:580,marginBottom:16,lineHeight:1.75,fontWeight:300,letterSpacing:'-.02em' },
   contactRow: { display:'flex',gap:14,flexWrap:'wrap',justifyContent:'center',marginBottom:36,marginTop:8 },
   contactLink: { fontSize:12,color:'var(--g600)',letterSpacing:'-.01em',transition:'color .2s' },
   tags: { display:'flex',flexWrap:'wrap',gap:7,justifyContent:'center' },
   tag: { fontSize:12,color:'var(--g400)',background:'var(--surf)',border:'.5px solid var(--border)',padding:'5px 14px',borderRadius:980,letterSpacing:'-.01em' },
+  statsGrid: {
+    maxWidth:1040,margin:'0 auto',padding:'clamp(36px,5vw,56px) 24px',
+    display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))',gap:16,
+  },
+  statNum: { fontSize:'clamp(30px,4vw,44px)',fontWeight:600,letterSpacing:'-.04em',color:'#fff',lineHeight:1,marginBottom:10 },
+  statLbl: { fontSize:12.5,color:'var(--g600)',lineHeight:1.55,letterSpacing:'-.01em',maxWidth:190 },
   section: { maxWidth:1040,margin:'0 auto',padding:'clamp(56px,7vw,88px) 24px' },
   lbl: { fontSize:11,letterSpacing:'.1em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:14 },
   sh: { fontSize:'clamp(26px,3.5vw,40px)',fontWeight:600,letterSpacing:'-.04em',lineHeight:1.1,color:'#fff',marginBottom:36 },
@@ -70,12 +101,30 @@ const s = {
   skillLbl: { fontSize:11,letterSpacing:'.1em',color:'var(--teal)',textTransform:'uppercase',fontWeight:500,marginBottom:12 },
   skillList: { listStyle:'none' },
   skillItem: { fontSize:13,color:'var(--g400)',padding:'5px 0 5px 16px',position:'relative',lineHeight:1.6,borderBottom:'.5px solid rgba(255,255,255,.04)',letterSpacing:'-.01em' },
+  ctaSec: {
+    maxWidth:760,margin:'0 auto',padding:'clamp(72px,9vw,120px) 24px',
+    display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',
+    position:'relative',
+  },
+  ctaBg: {
+    position:'absolute',width:700,height:440,borderRadius:'50%',
+    background:'radial-gradient(ellipse,rgba(46,202,139,.06) 0%,transparent 65%)',
+    bottom:-160,left:'50%',transform:'translateX(-50%)',pointerEvents:'none',
+  },
+  ctaH: { fontSize:'clamp(30px,4.5vw,52px)',fontWeight:600,letterSpacing:'-.045em',lineHeight:1.08,color:'#fff',marginBottom:18 },
+  ctaP: { fontSize:'clamp(14px,1.5vw,16px)',color:'var(--g400)',maxWidth:480,lineHeight:1.75,fontWeight:300,letterSpacing:'-.015em',marginBottom:34 },
+  ctaMeta: { fontSize:12,color:'var(--g600)',letterSpacing:'-.01em',marginTop:26 },
   foot: { borderTop:'.5px solid var(--border)',padding:'28px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',maxWidth:1040,margin:'0 auto' },
   fcopy: { fontSize:12,color:'var(--g600)',letterSpacing:'-.01em' },
   btt: { fontSize:12,color:'var(--g600)',background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:5,letterSpacing:'-.01em',transition:'color .2s' },
 }
 
 export default function Home() {
+  usePageMeta(
+    null,
+    'Growth & Marketing Manager and Full-Stack Developer. I build marketing systems and production platforms from zero — GTM strategy, technical SEO, HubSpot, Node.js, React.'
+  )
+
   useEffect(() => {
     document.querySelectorAll('.r-hero').forEach((el) => el.classList.add('on'))
   }, [])
@@ -94,9 +143,9 @@ export default function Home() {
       <nav style={s.nav}>
         <span style={s.navName}>Mohammed Alazaar</span>
         <div style={s.navLinks}>
-          <a href="mailto:mhmdalazr@gmail.com" style={s.navLink}>Contact</a>
-          <a href="https://www.linkedin.com/in/mohammed-alazaar/" target="_blank" rel="noreferrer" style={s.navLink}>LinkedIn</a>
-          <a href="https://github.com/Mohammed-Alazaar" target="_blank" rel="noreferrer" style={s.navLink}>GitHub</a>
+          <a href="mailto:mhmdalazr@gmail.com" style={s.navLink} onClick={() => trackContact('email', 'nav')}>Contact</a>
+          <a href="https://www.linkedin.com/in/mohammed-alazaar/" target="_blank" rel="noreferrer" style={s.navLink} onClick={() => trackContact('linkedin', 'nav')}>LinkedIn</a>
+          <a href="https://github.com/Mohammed-Alazaar" target="_blank" rel="noreferrer" style={s.navLink} onClick={() => trackContact('github', 'nav')}>GitHub</a>
         </div>
       </nav>
 
@@ -104,17 +153,42 @@ export default function Home() {
         <div style={s.heroBg} />
         <div style={s.heroInner}>
           <div style={s.heroLeft}>
-            <div className="r-hero" style={s.eyebrow}>Growth · Full-Stack · Marketing</div>
+            <div className="r-hero" style={s.badge}>
+              <span className="pulse" style={{width:6,height:6,borderRadius:'50%',background:'var(--teal)',display:'block',flexShrink:0}} />
+              Open to new opportunities
+            </div>
             <h1 className="r-hero" style={s.h1}>Mohammed<br/>Alazaar</h1>
             <p className="r-hero" style={s.sub}>
               Growth & Marketing Manager and Full-Stack Developer bridging strategy with technical execution — from go-to-market to production-grade platforms.
             </p>
+            <div className="r-hero" style={s.ctaRow}>
+              <a
+                href="mailto:mhmdalazr@gmail.com"
+                style={s.btnPrimary}
+                onClick={() => trackContact('email', 'hero')}
+                onMouseEnter={e => { e.currentTarget.style.opacity='.85'; e.currentTarget.style.transform='translateY(-1px)' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.transform='none' }}
+              >
+                Get in touch
+                <svg viewBox="0 0 12 12" style={{width:11,height:11,stroke:'currentColor',fill:'none',strokeWidth:1.6,strokeLinecap:'round'}}>
+                  <path d="M2 6h8M6 2l4 4-4 4"/>
+                </svg>
+              </a>
+              <button
+                style={s.btnGhost}
+                onClick={() => { track('cta_click', { cta: 'view_work' }); document.getElementById('work')?.scrollIntoView({ behavior: 'smooth' }) }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(255,255,255,.3)'; e.currentTarget.style.background='rgba(255,255,255,.04)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border-h)'; e.currentTarget.style.background='transparent' }}
+              >
+                View my work
+              </button>
+            </div>
             <div className="r-hero" style={s.contactRow}>
-              <a href="mailto:mhmdalazr@gmail.com" style={s.contactLink}>mhmdalazr@gmail.com</a>
+              <a href="mailto:mhmdalazr@gmail.com" style={s.contactLink} onClick={() => trackContact('email', 'hero_meta')}>mhmdalazr@gmail.com</a>
               <span style={{color:'rgba(255,255,255,.12)'}}>·</span>
               <span style={s.contactLink}>Ankara, Türkiye</span>
               <span style={{color:'rgba(255,255,255,.12)'}}>·</span>
-              <a href="https://www.linkedin.com/in/mohammed-alazaar/" target="_blank" rel="noreferrer" style={s.contactLink}>LinkedIn</a>
+              <a href="https://www.linkedin.com/in/mohammed-alazaar/" target="_blank" rel="noreferrer" style={s.contactLink} onClick={() => trackContact('linkedin', 'hero_meta')}>LinkedIn</a>
             </div>
             <div className="r-hero" style={s.tags}>
               {['Go-To-Market','Full-Stack Dev','SEO Architecture','HubSpot','GA4 · GTM','Node.js','MongoDB','React','Figma'].map(t => (
@@ -126,7 +200,18 @@ export default function Home() {
         </div>
       </section>
 
-      <div style={{borderTop:'.5px solid var(--border)'}}>
+      <div style={{borderBottom:'.5px solid var(--border)'}}>
+        <div style={s.statsGrid}>
+          {stats.map((st, i) => (
+            <div key={st.label} className={`r d${Math.min(i + 1, 3)}`}>
+              <div style={s.statNum}>{st.value}</div>
+              <div style={s.statLbl}>{st.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div id="work">
         <div style={s.section}>
           <div className="r" style={s.lbl}>Selected Work</div>
           <h2 className="r d1" style={s.sh}>Projects</h2>
@@ -238,6 +323,44 @@ export default function Home() {
         </div>
       </div>
 
+      <div style={{borderTop:'.5px solid var(--border)',position:'relative',overflow:'hidden'}} id="contact">
+        <div style={s.ctaBg} />
+        <div style={s.ctaSec}>
+          <div className="r" style={s.lbl}>Contact</div>
+          <h2 className="r d1" style={s.ctaH}>Let&apos;s build something<br/>that grows.</h2>
+          <p className="r d2" style={s.ctaP}>
+            Whether you need a go-to-market strategy, a production-grade platform, or someone who ships both — my inbox is open.
+          </p>
+          <div className="r d2" style={s.ctaRow}>
+            <a
+              href="mailto:mhmdalazr@gmail.com"
+              style={s.btnPrimary}
+              onClick={() => trackContact('email', 'cta')}
+              onMouseEnter={e => { e.currentTarget.style.opacity='.85'; e.currentTarget.style.transform='translateY(-1px)' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.transform='none' }}
+            >
+              Email me
+              <svg viewBox="0 0 12 12" style={{width:11,height:11,stroke:'currentColor',fill:'none',strokeWidth:1.6,strokeLinecap:'round'}}>
+                <path d="M2 6h8M6 2l4 4-4 4"/>
+              </svg>
+            </a>
+            <a
+              href="https://www.linkedin.com/in/mohammed-alazaar/"
+              target="_blank" rel="noreferrer"
+              style={s.btnGhost}
+              onClick={() => trackContact('linkedin', 'cta')}
+              onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(255,255,255,.3)'; e.currentTarget.style.background='rgba(255,255,255,.04)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border-h)'; e.currentTarget.style.background='transparent' }}
+            >
+              Connect on LinkedIn
+            </a>
+          </div>
+          <div className="r d3" style={s.ctaMeta}>
+            mhmdalazr@gmail.com · Ankara, Türkiye · Remote-friendly
+          </div>
+        </div>
+      </div>
+
       <div style={{borderTop:'.5px solid var(--border)'}}>
         <div style={{...s.foot}}>
           <span style={s.fcopy}>© 2026 Mohammed Alazaar</span>
@@ -259,6 +382,11 @@ export default function Home() {
         }
         .r-hero { opacity:0; transform:translateY(24px); transition:opacity .7s cubic-bezier(.25,.46,.45,.94),transform .7s cubic-bezier(.25,.46,.45,.94); }
         .r-hero.on { opacity:1; transform:none; }
+        @keyframes pulse {
+          0%,100% { box-shadow:0 0 0 0 rgba(46,202,139,.45); }
+          50% { box-shadow:0 0 0 5px rgba(46,202,139,0); }
+        }
+        .pulse { animation:pulse 2.2s ease-in-out infinite; }
       `}</style>
     </>
   )

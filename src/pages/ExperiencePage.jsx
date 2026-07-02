@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { experiences } from '../data'
 import FeatureIcon from '../components/FeatureIcon'
+import { usePageMeta } from '../components/usePageMeta'
 
 const s = {
   nav: {
@@ -52,6 +53,8 @@ export default function ExperiencePage() {
   const navigate = useNavigate()
   const exp = experiences.find((e) => e.id === id) || null
   const dotsRef = useRef(null)
+
+  usePageMeta(exp ? `${exp.company} — ${exp.role}` : null, exp?.description)
 
   useEffect(() => {
     if (!exp) { navigate('/'); return }
