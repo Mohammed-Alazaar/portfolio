@@ -37,6 +37,7 @@ jobs:
       - name: Verify search-engine files in build output
         run: |
           test -f dist/sitemap.xml
+          test -f dist/sitemap-pages.xml
           test -f dist/robots.txt
           test -f dist/project/draglab/index.html
           test -f dist/project/techparadise/index.html
@@ -44,15 +45,21 @@ jobs:
           test -f dist/experience/snowlex/index.html
           test -f dist/experience/draglab/index.html
           cmp public/sitemap.xml dist/sitemap.xml
+          cmp public/sitemap-pages.xml dist/sitemap-pages.xml
           cmp public/robots.txt dist/robots.txt
           test "$(head -c 5 dist/sitemap.xml)" = "<?xml"
+          test "$(head -c 5 dist/sitemap-pages.xml)" = "<?xml"
           test "$(grep -c '<loc>' dist/sitemap.xml)" -eq 6
+          test "$(grep -c '<loc>' dist/sitemap-pages.xml)" -eq 6
           ! grep -Fq '#' dist/sitemap.xml
+          ! grep -Fq '#' dist/sitemap-pages.xml
           grep -Fq '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' dist/sitemap.xml
           grep -Fq 'https://mohammed-alazaar.github.io/portfolio/' dist/sitemap.xml
-          grep -Fq 'Sitemap: https://mohammed-alazaar.github.io/portfolio/sitemap.xml' dist/robots.txt
+          grep -Fq 'Sitemap: https://mohammed-alazaar.github.io/portfolio/sitemap-pages.xml' dist/robots.txt
           echo "---- sitemap.xml ----"
           cat dist/sitemap.xml
+          echo "---- sitemap-pages.xml ----"
+          cat dist/sitemap-pages.xml
           echo "---- robots.txt ----"
           cat dist/robots.txt
 
