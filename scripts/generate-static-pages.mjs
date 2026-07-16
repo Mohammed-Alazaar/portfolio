@@ -49,34 +49,19 @@ const publicPages = [
   })),
 ]
 
-const sitemapPages = [
-  { path: '', priority: '1.0' },
-  ...publicPages.map(({ path }) => ({ path, priority: '0.8' })),
-]
+// Bump this whenever the set of public pages or their content meaningfully
+// changes, so Search Console sees a fresh <lastmod>. Kept as a fixed constant
+// (not a build-time date) so the generated sitemap stays byte-identical to the
+// committed public/sitemap.xml that the deploy workflow verifies.
+const lastmod = '2026-07-17'
+const sitemapPages = ['', ...publicPages.map(({ path }) => path)]
 const sitemap = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...sitemapPages.flatMap(({ path, priority }) => [
+  ...sitemapPages.flatMap((path) => [
     '  <url>',
     `    <loc>${baseUrl}/${path ? `${path}/` : ''}</loc>`,
-    '    <lastmod>2026-07-16</lastmod>',
-    '    <changefreq>monthly</changefreq>',
-    `    <priority>${priority}</priority>`,
-    '  </url>',
-  ]),
-  '</urlset>',
-  '',
-].join('\n')
-
-// A second, deliberately minimal sitemap has a fresh URL for Search Console.
-// It avoids reusing a stale failed-fetch record for /sitemap.xml and contains
-// only the required sitemap fields.
-const minimalSitemap = [
-  '<?xml version="1.0" encoding="UTF-8"?>',
-  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...sitemapPages.flatMap(({ path }) => [
-    '  <url>',
-    `    <loc>${baseUrl}/${path ? `${path}/` : ''}</loc>`,
+    `    <lastmod>${lastmod}</lastmod>`,
     '  </url>',
   ]),
   '</urlset>',
@@ -84,7 +69,6 @@ const minimalSitemap = [
 ].join('\n')
 
 await writeFile(join(dist, 'sitemap.xml'), sitemap)
-await writeFile(join(dist, 'sitemap-pages.xml'), minimalSitemap)
 
 for (const page of publicPages) {
   const directory = join(dist, ...page.path.split('/'))
@@ -103,4 +87,4 @@ await writeFile(join(adminDirectory, 'index.html'), pageHtml({
   indexable: false,
 }))
 
-console.log(`Generated two ${sitemapPages.length}-URL sitemaps, ${publicPages.length} indexable route shells, and the admin shell.`)
+console.log(`Generated a ${sitemapPages.length}-URL sitemap, ${publicPages.length} indexable route shells, and the admin shell.`)
