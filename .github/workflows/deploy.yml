@@ -34,6 +34,21 @@ jobs:
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
+      - name: Verify search-engine files in build output
+        run: |
+          test -f dist/sitemap.xml
+          test -f dist/robots.txt
+          cmp public/sitemap.xml dist/sitemap.xml
+          cmp public/robots.txt dist/robots.txt
+          test "$(head -c 5 dist/sitemap.xml)" = "<?xml"
+          grep -Fq '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' dist/sitemap.xml
+          grep -Fq 'https://mohammed-alazaar.github.io/portfolio/' dist/sitemap.xml
+          grep -Fq 'Sitemap: https://mohammed-alazaar.github.io/portfolio/sitemap.xml' dist/robots.txt
+          echo "---- sitemap.xml ----"
+          cat dist/sitemap.xml
+          echo "---- robots.txt ----"
+          cat dist/robots.txt
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
