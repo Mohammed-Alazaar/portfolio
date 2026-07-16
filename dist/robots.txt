@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://mohammed-alazaar.github.io/portfolio/sitemap.xml
