@@ -65,7 +65,7 @@ export default function ProjectPage() {
   const project = projects.find((p) => p.id === id) || null
   const dotsRef = useRef(null)
 
-  usePageMeta(project?.title, project?.description)
+  usePageMeta(project?.title, project?.description, project ? `/project/${project.id}/` : '/')
 
   useEffect(() => {
     if (!project) { navigate('/'); return }

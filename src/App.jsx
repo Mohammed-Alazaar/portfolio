@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { HashRouter as BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import ProjectPage from './pages/ProjectPage'
 import ExperiencePage from './pages/ExperiencePage'
@@ -31,7 +31,7 @@ function RouteChange() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/portfolio">
       <RouteChange />
       <Routes>
         <Route path="/" element={<Home />} />

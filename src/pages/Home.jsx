@@ -122,7 +122,8 @@ const s = {
 export default function Home() {
   usePageMeta(
     null,
-    'Growth & Marketing Manager and Full-Stack Developer. I build marketing systems and production platforms from zero — GTM strategy, technical SEO, HubSpot, Node.js, React.'
+    'Growth & Marketing Manager and Full-Stack Developer. I build marketing systems and production platforms from zero — GTM strategy, technical SEO, HubSpot, Node.js, React.',
+    '/'
   )
 
   useEffect(() => {

@@ -54,7 +54,7 @@ export default function ExperiencePage() {
   const exp = experiences.find((e) => e.id === id) || null
   const dotsRef = useRef(null)
 
-  usePageMeta(exp ? `${exp.company} — ${exp.role}` : null, exp?.description)
+  usePageMeta(exp ? `${exp.company} — ${exp.role}` : null, exp?.description, exp ? `/experience/${exp.id}/` : '/')
 
   useEffect(() => {
     if (!exp) { navigate('/'); return }
